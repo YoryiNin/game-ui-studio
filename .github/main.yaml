@@ -1,0 +1,31 @@
+name: Deploy to Surge
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Install Surge
+        run: npm install -g surge
+
+      - name: Deploy to Surge
+        run: surge ./dist eight-feather.surge.sh --token ${{ secrets.SURGE_TOKEN }}
