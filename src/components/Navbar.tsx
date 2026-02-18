@@ -13,7 +13,9 @@ export default function Navbar({ activeTab }: NavbarProps) {
   return (
     <header className="w-full bg-[#11111f] shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center py-4 px-6">
-        <h1 className="text-2xl font-bold text-cyan-400">GameUI Studio</h1>
+        <Link to="/" className="hover:opacity-80 transition-opacity">
+          <h1 className="text-2xl font-bold text-cyan-400">YNStudios</h1>
+        </Link>
 
         <nav className="flex gap-4">
           {tabs.map(tab => (
