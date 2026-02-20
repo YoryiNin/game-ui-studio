@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { motion, type Variants } from "framer-motion";
-import { FiDroplet, FiPenTool, FiLayout, FiArrowRight } from "react-icons/fi";
+import { FiDroplet, FiPenTool, FiLayout, FiArrowRight, FiImage } from "react-icons/fi";
+
 
 export default function HomePage() {
   const modules = [
@@ -29,6 +30,14 @@ export default function HomePage() {
       description: "Construye interfaces completas con componentes drag & drop",
       features: ["Componentes predefinidos", "Grid system", "Responsive design"]
     },
+     { // Nuevo módulo
+    name: "Remove Background", 
+    path: "/remove-bg", 
+    color: "from-orange-500 to-red-600", 
+    icon: <FiImage className="w-12 h-12" />,
+    description: "Elimina el fondo de imágenes automáticamente con IA",
+    features: ["Detección automática", "Fondo transparente", "Export PNG"]
+  },
   ];
 
   const containerVariants: Variants = {
