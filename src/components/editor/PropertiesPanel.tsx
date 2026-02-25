@@ -36,6 +36,11 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
 
   const fontWeights = [100, 200, 300, 400, 500, 600, 700, 800, 900];
 
+  // Helper function to safely get number values
+  const getSafeNumber = (value: number | undefined | null, defaultValue: number): number => {
+    return value ?? defaultValue;
+  };
+
   const addGradientStop = () => {
     const stops = element.gradientStops || [
       { offset: 0, color: "#ff0000" },
@@ -137,7 +142,7 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
               min="0"
               max="1"
               step="0.01"
-              value={element.opacity || 1}
+              value={element.opacity ?? 1}
               onChange={(e) => updateElement(element.id, { opacity: parseFloat(e.target.value) })}
               className="w-full"
             />
@@ -149,7 +154,7 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
               <label className="text-xs text-white/50">Stroke</label>
               <input
                 type="checkbox"
-                checked={element.strokeEnabled}
+                checked={element.strokeEnabled ?? false}
                 onChange={(e) => updateElement(element.id, { strokeEnabled: e.target.checked })}
                 className="rounded bg-[#1c1c2e]"
               />
@@ -165,8 +170,8 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
                   />
                   <input
                     type="number"
-                    value={element.strokeWidth || 1}
-                    onChange={(e) => updateElement(element.id, { strokeWidth: parseInt(e.target.value) })}
+                    value={element.strokeWidth ?? 1}
+                    onChange={(e) => updateElement(element.id, { strokeWidth: parseInt(e.target.value) || 1 })}
                     className="flex-1 bg-[#1c1c2e] rounded px-3 text-sm"
                     placeholder="Width"
                     min="0"
@@ -183,8 +188,8 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
               <label className="text-xs text-white/50 block">Corner Radius</label>
               <input
                 type="number"
-                value={element.cornerRadius || 0}
-                onChange={(e) => updateElement(element.id, { cornerRadius: parseInt(e.target.value) })}
+                value={element.cornerRadius ?? 0}
+                onChange={(e) => updateElement(element.id, { cornerRadius: parseInt(e.target.value) || 0 })}
                 className="w-full bg-[#1c1c2e] rounded px-3 py-2 text-sm"
                 min="0"
                 max="100"
@@ -198,8 +203,8 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
                 <label className="text-xs text-white/50 block">Number of Points</label>
                 <input
                   type="number"
-                  value={element.numPoints || 5}
-                  onChange={(e) => updateElement(element.id, { numPoints: parseInt(e.target.value) })}
+                  value={element.numPoints ?? 5}
+                  onChange={(e) => updateElement(element.id, { numPoints: parseInt(e.target.value) || 3 })}
                   className="w-full bg-[#1c1c2e] rounded px-3 py-2 text-sm"
                   min="3"
                   max="20"
@@ -210,11 +215,11 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
                   <label className="text-xs text-white/50 block">Inner Radius</label>
                   <input
                     type="number"
-                    value={element.innerRadius || 50}
-                    onChange={(e) => updateElement(element.id, { innerRadius: parseInt(e.target.value) })}
+                    value={element.innerRadius ?? 50}
+                    onChange={(e) => updateElement(element.id, { innerRadius: parseInt(e.target.value) || 10 })}
                     className="w-full bg-[#1c1c2e] rounded px-3 py-2 text-sm"
                     min="10"
-                    max={element.size}
+                    max={element.size ?? 200}
                   />
                 </div>
               )}
@@ -229,7 +234,7 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
           <div className="space-y-2">
             <label className="text-xs text-white/50 block">Text Content</label>
             <textarea
-              value={element.text}
+              value={element.text || ""}
               onChange={(e) => updateElement(element.id, { text: e.target.value })}
               className="w-full bg-[#1c1c2e] rounded px-3 py-2 text-sm"
               rows={3}
@@ -240,7 +245,7 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
           <div className="space-y-2">
             <label className="text-xs text-white/50 block">Font Family</label>
             <select
-              value={element.fontFamily}
+              value={element.fontFamily || "Arial"}
               onChange={(e) => updateElement(element.id, { fontFamily: e.target.value })}
               className="w-full bg-[#1c1c2e] rounded px-3 py-2 text-sm"
             >
@@ -255,8 +260,8 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
               <label className="text-xs text-white/50 block">Font Size</label>
               <input
                 type="number"
-                value={element.fontSize}
-                onChange={(e) => updateElement(element.id, { fontSize: parseInt(e.target.value) })}
+                value={element.fontSize ?? 60}
+                onChange={(e) => updateElement(element.id, { fontSize: parseInt(e.target.value) || 8 })}
                 className="w-full bg-[#1c1c2e] rounded px-3 py-2 text-sm"
                 min="8"
                 max="300"
@@ -266,7 +271,7 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
             <div className="space-y-2">
               <label className="text-xs text-white/50 block">Font Weight</label>
               <select
-                value={element.fontWeight}
+                value={element.fontWeight ?? 400}
                 onChange={(e) => updateElement(element.id, { fontWeight: e.target.value })}
                 className="w-full bg-[#1c1c2e] rounded px-3 py-2 text-sm"
               >
@@ -327,8 +332,8 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
               <label className="text-xs text-white/50 block">Letter Spacing</label>
               <input
                 type="number"
-                value={element.letterSpacing || 0}
-                onChange={(e) => updateElement(element.id, { letterSpacing: parseInt(e.target.value) })}
+                value={element.letterSpacing ?? 0}
+                onChange={(e) => updateElement(element.id, { letterSpacing: parseInt(e.target.value) || 0 })}
                 className="w-full bg-[#1c1c2e] rounded px-3 py-2 text-sm"
                 min="-10"
                 max="50"
@@ -339,14 +344,110 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
               <label className="text-xs text-white/50 block">Line Height</label>
               <input
                 type="number"
-                value={element.lineHeight || 1}
-                onChange={(e) => updateElement(element.id, { lineHeight: parseFloat(e.target.value) })}
+                value={element.lineHeight ?? 1}
+                onChange={(e) => updateElement(element.id, { lineHeight: parseFloat(e.target.value) || 1 })}
                 className="w-full bg-[#1c1c2e] rounded px-3 py-2 text-sm"
                 min="0.5"
                 max="3"
                 step="0.1"
               />
             </div>
+          </div>
+
+          {/* Curved Text Section */}
+          <div className="space-y-2 pt-2 border-t border-white/10">
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-white/50">Curved Text</label>
+              <input
+                type="checkbox"
+                checked={element.curved || false}
+                onChange={(e) => updateElement(element.id, { curved: e.target.checked })}
+                className="rounded bg-[#1c1c2e]"
+              />
+            </div>
+
+            {element.curved && (
+              <>
+                <div className="space-y-2">
+                  <label className="text-xs text-white/50">Radius: {element.curveRadius ?? 200}px</label>
+                  <input
+                    type="range"
+                    min="50"
+                    max="500"
+                    value={element.curveRadius ?? 200}
+                    onChange={(e) => updateElement(element.id, { curveRadius: parseInt(e.target.value) || 50 })}
+                    className="w-full"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <label className="text-xs text-white/50">Start Angle (°)</label>
+                    <input
+                      type="number"
+                      value={element.curveStartAngle ?? 0}
+                      onChange={(e) => updateElement(element.id, { curveStartAngle: parseInt(e.target.value) || 0 })}
+                      className="w-full bg-[#1c1c2e] rounded px-2 py-1 text-sm"
+                      min="-360"
+                      max="360"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-white/50">End Angle (°)</label>
+                    <input
+                      type="number"
+                      value={element.curveEndAngle ?? 180}
+                      onChange={(e) => updateElement(element.id, { curveEndAngle: parseInt(e.target.value) || 0 })}
+                      className="w-full bg-[#1c1c2e] rounded px-2 py-1 text-sm"
+                      min="-360"
+                      max="360"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => updateElement(element.id, { curveDirection: "clockwise" })}
+                    className={`flex-1 p-2 rounded text-xs ${
+                      element.curveDirection === "clockwise" ? 'bg-cyan-500' : 'bg-[#1c1c2e]'
+                    }`}
+                  >
+                    Clockwise
+                  </button>
+                  <button
+                    onClick={() => updateElement(element.id, { curveDirection: "counterclockwise" })}
+                    className={`flex-1 p-2 rounded text-xs ${
+                      element.curveDirection === "counterclockwise" ? 'bg-cyan-500' : 'bg-[#1c1c2e]'
+                    }`}
+                  >
+                    Counter
+                  </button>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="upsideDown"
+                    checked={element.curveUpsideDown || false}
+                    onChange={(e) => updateElement(element.id, { curveUpsideDown: e.target.checked })}
+                    className="rounded bg-[#1c1c2e]"
+                  />
+                  <label htmlFor="upsideDown" className="text-xs text-white/50">Upside Down</label>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs text-white/50">Offset: {element.curveOffset ?? 50}%</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={element.curveOffset ?? 50}
+                    onChange={(e) => updateElement(element.id, { curveOffset: parseInt(e.target.value) || 0 })}
+                    className="w-full"
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -360,7 +461,7 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
               <label className="text-xs text-white/50">Drop Shadow</label>
               <input
                 type="checkbox"
-                checked={element.shadowEnabled}
+                checked={element.shadowEnabled || false}
                 onChange={(e) => updateElement(element.id, { shadowEnabled: e.target.checked })}
                 className="rounded bg-[#1c1c2e]"
               />
@@ -379,7 +480,7 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
                     min="0"
                     max="1"
                     step="0.01"
-                    value={element.shadowOpacity || 0.5}
+                    value={element.shadowOpacity ?? 0.5}
                     onChange={(e) => updateElement(element.id, { shadowOpacity: parseFloat(e.target.value) })}
                     className="flex-1"
                   />
@@ -387,22 +488,22 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
                 <div className="grid grid-cols-3 gap-2">
                   <input
                     type="number"
-                    value={element.shadowBlur || 0}
-                    onChange={(e) => updateElement(element.id, { shadowBlur: parseInt(e.target.value) })}
+                    value={element.shadowBlur ?? 0}
+                    onChange={(e) => updateElement(element.id, { shadowBlur: parseInt(e.target.value) || 0 })}
                     className="bg-[#1c1c2e] rounded px-2 py-1 text-xs"
                     placeholder="Blur"
                   />
                   <input
                     type="number"
-                    value={element.shadowOffsetX || 0}
-                    onChange={(e) => updateElement(element.id, { shadowOffsetX: parseInt(e.target.value) })}
+                    value={element.shadowOffsetX ?? 0}
+                    onChange={(e) => updateElement(element.id, { shadowOffsetX: parseInt(e.target.value) || 0 })}
                     className="bg-[#1c1c2e] rounded px-2 py-1 text-xs"
                     placeholder="X"
                   />
                   <input
                     type="number"
-                    value={element.shadowOffsetY || 0}
-                    onChange={(e) => updateElement(element.id, { shadowOffsetY: parseInt(e.target.value) })}
+                    value={element.shadowOffsetY ?? 0}
+                    onChange={(e) => updateElement(element.id, { shadowOffsetY: parseInt(e.target.value) || 0 })}
                     className="bg-[#1c1c2e] rounded px-2 py-1 text-xs"
                     placeholder="Y"
                   />
@@ -417,7 +518,7 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
               <label className="text-xs text-white/50">Gaussian Blur</label>
               <input
                 type="checkbox"
-                checked={element.blurEnabled}
+                checked={element.blurEnabled || false}
                 onChange={(e) => updateElement(element.id, { blurEnabled: e.target.checked })}
                 className="rounded bg-[#1c1c2e]"
               />
@@ -427,8 +528,8 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
                 type="range"
                 min="0"
                 max="20"
-                value={element.blurRadius || 0}
-                onChange={(e) => updateElement(element.id, { blurRadius: parseInt(e.target.value) })}
+                value={element.blurRadius ?? 0}
+                onChange={(e) => updateElement(element.id, { blurRadius: parseInt(e.target.value) || 0 })}
                 className="w-full"
               />
             )}
@@ -445,7 +546,7 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
               <input
                 type="number"
                 value={Math.round(element.x)}
-                onChange={(e) => updateElement(element.id, { x: parseInt(e.target.value) })}
+                onChange={(e) => updateElement(element.id, { x: parseInt(e.target.value) || 0 })}
                 className="w-full bg-[#1c1c2e] rounded px-3 py-2 text-sm"
               />
             </div>
@@ -454,7 +555,7 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
               <input
                 type="number"
                 value={Math.round(element.y)}
-                onChange={(e) => updateElement(element.id, { y: parseInt(e.target.value) })}
+                onChange={(e) => updateElement(element.id, { y: parseInt(e.target.value) || 0 })}
                 className="w-full bg-[#1c1c2e] rounded px-3 py-2 text-sm"
               />
             </div>
@@ -465,8 +566,8 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
               <label className="text-xs text-white/50 block">Width</label>
               <input
                 type="number"
-                value={Math.round(element.size)}
-                onChange={(e) => updateElement(element.id, { size: parseInt(e.target.value) })}
+                value={Math.round(element.size ?? 100)}
+                onChange={(e) => updateElement(element.id, { size: parseInt(e.target.value) || 1 })}
                 className="w-full bg-[#1c1c2e] rounded px-3 py-2 text-sm"
                 min="1"
               />
@@ -476,7 +577,7 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
               <input
                 type="number"
                 value={element.rotation}
-                onChange={(e) => updateElement(element.id, { rotation: parseInt(e.target.value) })}
+                onChange={(e) => updateElement(element.id, { rotation: parseInt(e.target.value) || 0 })}
                 className="w-full bg-[#1c1c2e] rounded px-3 py-2 text-sm"
                 min="0"
                 max="360"
@@ -489,8 +590,8 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
               <label className="text-xs text-white/50 block">Scale X</label>
               <input
                 type="number"
-                value={element.scaleX || 1}
-                onChange={(e) => updateElement(element.id, { scaleX: parseFloat(e.target.value) })}
+                value={element.scaleX ?? 1}
+                onChange={(e) => updateElement(element.id, { scaleX: parseFloat(e.target.value) || 1 })}
                 className="w-full bg-[#1c1c2e] rounded px-3 py-2 text-sm"
                 min="0.1"
                 max="3"
@@ -501,8 +602,8 @@ export default function PropertiesPanel({ element, updateElement }: Props) {
               <label className="text-xs text-white/50 block">Scale Y</label>
               <input
                 type="number"
-                value={element.scaleY || 1}
-                onChange={(e) => updateElement(element.id, { scaleY: parseFloat(e.target.value) })}
+                value={element.scaleY ?? 1}
+                onChange={(e) => updateElement(element.id, { scaleY: parseFloat(e.target.value) || 1 })}
                 className="w-full bg-[#1c1c2e] rounded px-3 py-2 text-sm"
                 min="0.1"
                 max="3"

@@ -170,25 +170,32 @@ export default function ProIconDesigner() {
       case "polygon":
         newElement = { ...base, type: "polygon", size: 150, numPoints: 6 } as EditorElement;
         break;
-      case "text":
-        newElement = {
-          ...base,
-          type: "text",
-          text: "LOGO",
-          fontSize: 70,
-          fontFamily: "Montserrat",
-          fontWeight: 700,
-          fontStyle: "normal",
-          textDecoration: "none",
-          uppercase: false,
-          letterSpacing: 2,
-          lineHeight: 1,
-          align: "center",
-          strokeEnabled: false,
-          shadowEnabled: false,
-          size: 150,
-        } as EditorElement;
-        break;
+case "text":
+  newElement = {
+    ...base,
+    type: "text",
+    text: "LOGO",
+    fontSize: 70,
+    fontFamily: "Montserrat",
+    fontWeight: 700,
+    fontStyle: "normal",
+    textDecoration: "none",
+    uppercase: false,
+    letterSpacing: 2,
+    lineHeight: 1,
+    align: "center",
+    strokeEnabled: false,
+    shadowEnabled: false,
+    size: 150,
+    curved: false,
+    curveRadius: 200,
+    curveStartAngle: 0,
+    curveEndAngle: 180,
+    curveDirection: "clockwise",
+    curveUpsideDown: false,
+    curveOffset: 50,
+  } as EditorElement;
+  break;
       case "line":
         newElement = {
           ...base,
@@ -611,3 +618,4 @@ export default function ProIconDesigner() {
     </div>
   );
 }
+

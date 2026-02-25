@@ -157,6 +157,15 @@ interface TextElement extends BaseElement {
   // El tamaño base (ancho aproximado) se puede derivar, pero lo mantenemos
   // para consistencia con otras formas (aunque no se usa directamente en el render)
   size?: number;
+
+  // Nuevas propiedades para texto curvado
+  curved?: boolean;               // Activar/desactivar curvatura
+  curveRadius?: number;            // Radio de curvatura en píxeles
+  curveStartAngle?: number;        // Ángulo inicial (grados)
+  curveEndAngle?: number;          // Ángulo final (grados)
+  curveDirection?: "clockwise" | "counterclockwise"; // Dirección del arco
+  curveUpsideDown?: boolean;       // Invertir verticalmente (para interiores)
+  curveOffset?: number;            // Desplazamiento a lo largo del path (0-100%)
 }
 
 /**

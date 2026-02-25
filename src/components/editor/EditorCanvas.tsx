@@ -10,6 +10,7 @@ import {
   Line,
   Path,
   Group,
+  TextPath,
 } from "react-konva";
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import type Konva from "konva";
@@ -658,26 +659,57 @@ const EditorCanvas = forwardRef<EditorCanvasRef, Props>(({
                 );
               case "polygon":
                 return <RegularPolygon {...commonProps} {...styleProps} sides={el.numPoints || 6} radius={el.size / 2} />;
-              case "text":
-                return (
-                  <Text
-                    {...commonProps}
-                    {...styleProps}
-                    text={
-                      el.uppercase
-                        ? (el.text || "TEXT").toUpperCase()
-                        : el.text || "Text"
-                    }
-                    fontSize={el.fontSize || 60}
-                    fontFamily={el.fontFamily || "Arial"}
-                    fontStyle={`${el.fontStyle === "italic" ? "italic " : ""}${el.fontWeight || 400}`}
-                    letterSpacing={el.letterSpacing || 0}
-                    lineHeight={el.lineHeight || 1}
-                    align={el.align || "left"}
-                    textDecoration={el.textDecoration}
-                    // verticalAlign no es soportado directamente, se podría manejar con offsetY
-                  />
-                );
+              case "text": {
+                // Propiedades específicas de texto
+                const textProps = {
+                  ...commonProps,
+                  ...styleProps,
+                  text: el.uppercase
+                    ? (el.text || "TEXT").toUpperCase()
+                    : el.text || "Text",
+                  fontSize: el.fontSize || 60,
+                  fontFamily: el.fontFamily || "Arial",
+                  fontStyle: `${el.fontStyle === "italic" ? "italic " : ""}${el.fontWeight || 400}`,
+                  letterSpacing: el.letterSpacing || 0,
+                  lineHeight: el.lineHeight || 1,
+                  align: el.align || "left",
+                  textDecoration: el.textDecoration,
+                };
+
+                if (el.curved) {
+                  // Calcular parámetros del arco
+                  const radius = el.curveRadius || 200;
+                  const startAngle = ((el.curveStartAngle || 0) * Math.PI) / 180;
+                  const endAngle = ((el.curveEndAngle || 180) * Math.PI) / 180;
+                  const clockwise = el.curveDirection !== "counterclockwise"; // por defecto clockwise
+
+                  // Puntos inicial y final del arco (centro en 0,0)
+                  const startX = radius * Math.cos(startAngle);
+                  const startY = radius * Math.sin(startAngle);
+                  const endX = radius * Math.cos(endAngle);
+                  const endY = radius * Math.sin(endAngle);
+
+                  // Determinar si es un arco grande (>180 grados)
+                  const largeArc = Math.abs(endAngle - startAngle) > Math.PI ? 1 : 0;
+                  // sweepFlag = 1 para clockwise, 0 para counterclockwise
+                  const sweepFlag = clockwise ? 1 : 0;
+
+                  // Construir path SVG del arco
+                  const pathData = `M ${startX},${startY} A ${radius},${radius} 0 ${largeArc} ${sweepFlag} ${endX},${endY}`;
+
+                  return (
+                    <TextPath
+                      {...textProps}
+                      data={pathData}
+                      startOffset={`${el.curveOffset || 50}%`} // Centrado por defecto
+                      flipY={el.curveUpsideDown || false}      // Invertir verticalmente
+                    />
+                  );
+                } else {
+                  // Texto normal
+                  return <Text {...textProps} />;
+                }
+              }
               case "line":
                 return (
                   <Line
