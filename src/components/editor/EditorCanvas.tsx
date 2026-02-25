@@ -8,10 +8,12 @@ import {
   Transformer,
   Text,
   Line,
+  Path,
+  Group,
 } from "react-konva";
 import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import type Konva from "konva";
-import type { EditorElement } from "../../types/editor";
+import type { EditorElement } from "../../types/EditorElement";
 
 interface Props {
   elements: EditorElement[];
@@ -90,7 +92,7 @@ const EditorCanvas = forwardRef<EditorCanvasRef, Props>(({
   selectedIds = [],
   setSelectedIds,
   zoom = 1,
-  gridEnabled = true,
+  gridEnabled = false,
   snapToGrid = true,
   gridSize = 10,
   showSafeGuides = false,
@@ -155,11 +157,8 @@ const EditorCanvas = forwardRef<EditorCanvasRef, Props>(({
       let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
       
       visible.forEach(el => {
-        // Buscar el nodo de Konva directamente para obtener su bounding box exacto
         const node = stage.findOne(`#${el.id}`);
-        
         if (node) {
-          // Si encontramos el nodo, usamos getClientRect() que es más preciso
           const box = node.getClientRect();
           minX = Math.min(minX, box.x);
           minY = Math.min(minY, box.y);
@@ -316,11 +315,12 @@ const EditorCanvas = forwardRef<EditorCanvasRef, Props>(({
       if (!node) return false;
 
       const box = node.getClientRect();
+      // Las coordenadas del rectángulo ya están en el espacio del stage (sin dividir por zoom)
       const stageBox = {
-        x: rect.x / zoom,
-        y: rect.y / zoom,
-        width: rect.width / zoom,
-        height: rect.height / zoom,
+        x: rect.x,
+        y: rect.y,
+        width: rect.width,
+        height: rect.height,
       };
 
       return (
@@ -525,7 +525,7 @@ const EditorCanvas = forwardRef<EditorCanvasRef, Props>(({
       gridLines.push(
         <Line
           key={`h-bold-${i}`}
-          points={[0, i, width, i]}
+          points={[0, i, height, i]}
           stroke="#4a5568"
           strokeWidth={0.8 / zoom}
           opacity={0.7}
@@ -562,7 +562,8 @@ const EditorCanvas = forwardRef<EditorCanvasRef, Props>(({
 
           {/* Elementos del diseño */}
           {elements.filter(el => el.visible !== false).map((el) => {
-            const common = {
+            // Propiedades comunes a todos los nodos Konva
+            const commonProps = {
               id: el.id,
               key: el.id,
               x: el.x,
@@ -571,7 +572,6 @@ const EditorCanvas = forwardRef<EditorCanvasRef, Props>(({
               scaleX: el.scaleX || 1,
               scaleY: el.scaleY || 1,
               draggable: true,
-              fill: el.fill,
               opacity: el.opacity ?? 1,
               visible: el.visible !== false,
               onClick: (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -601,7 +601,7 @@ const EditorCanvas = forwardRef<EditorCanvasRef, Props>(({
                   setElements((prev) =>
                     prev.map((item) =>
                       selectedIds.includes(item.id)
-                        ? { ...item, x: item.x + dx, y: item.y + dy }
+                        ? ({ ...item, x: item.x + dx, y: item.y + dy } as EditorElement)
                         : item
                     )
                   );
@@ -609,7 +609,7 @@ const EditorCanvas = forwardRef<EditorCanvasRef, Props>(({
                   setElements((prev) =>
                     prev.map((item) =>
                       item.id === el.id
-                        ? { ...item, x: e.target.x(), y: e.target.y() }
+                        ? ({ ...item, x: e.target.x(), y: e.target.y() } as EditorElement)
                         : item
                     )
                   );
@@ -624,28 +624,45 @@ const EditorCanvas = forwardRef<EditorCanvasRef, Props>(({
               },
             };
 
+            // Propiedades de estilo comunes (relleno, trazo, sombra, etc.)
+            const styleProps = {
+              fill: el.fill,
+              stroke: el.strokeEnabled ? el.stroke : undefined,
+              strokeWidth: el.strokeEnabled ? (el.strokeWidth || 0) : 0,
+              strokeDash: el.strokeDash,
+              shadowColor: el.shadowEnabled ? el.shadowColor : undefined,
+              shadowBlur: el.shadowEnabled ? (el.shadowBlur || 0) : 0,
+              shadowOffsetX: el.shadowEnabled ? (el.shadowOffsetX || 0) : 0,
+              shadowOffsetY: el.shadowEnabled ? (el.shadowOffsetY || 0) : 0,
+              shadowOpacity: el.shadowEnabled ? (el.shadowOpacity || 0.5) : 0,
+              // Nota: blur no está soportado directamente en Konva para formas simples, se podría usar filters
+            };
+
+            // Renderizado según el tipo
             switch (el.type) {
               case "circle":
-                return <Circle {...common} radius={el.size / 2} />;
+                return <Circle {...commonProps} {...styleProps} radius={el.size / 2} />;
               case "rect":
-                return <Rect {...common} width={el.size} height={el.size} cornerRadius={el.cornerRadius || 0} />;
+                return <Rect {...commonProps} {...styleProps} width={el.size} height={el.size} cornerRadius={el.cornerRadius || 0} />;
               case "triangle":
-                return <RegularPolygon {...common} sides={3} radius={el.size / 2} />;
+                return <RegularPolygon {...commonProps} {...styleProps} sides={3} radius={el.size / 2} />;
               case "star":
                 return (
                   <Star
-                    {...common}
+                    {...commonProps}
+                    {...styleProps}
                     numPoints={el.numPoints || 5}
                     outerRadius={el.size / 2}
                     innerRadius={el.innerRadius || el.size / 4}
                   />
                 );
               case "polygon":
-                return <RegularPolygon {...common} sides={el.numPoints || 6} radius={el.size / 2} />;
+                return <RegularPolygon {...commonProps} {...styleProps} sides={el.numPoints || 6} radius={el.size / 2} />;
               case "text":
                 return (
                   <Text
-                    {...common}
+                    {...commonProps}
+                    {...styleProps}
                     text={
                       el.uppercase
                         ? (el.text || "TEXT").toUpperCase()
@@ -657,15 +674,51 @@ const EditorCanvas = forwardRef<EditorCanvasRef, Props>(({
                     letterSpacing={el.letterSpacing || 0}
                     lineHeight={el.lineHeight || 1}
                     align={el.align || "left"}
-                    stroke={el.strokeEnabled ? el.stroke : undefined}
-                    strokeWidth={el.strokeEnabled ? (el.strokeWidth || 0) : 0}
-                    shadowColor={el.shadowEnabled ? el.shadowColor : undefined}
-                    shadowBlur={el.shadowEnabled ? (el.shadowBlur || 0) : 0}
-                    shadowOffsetX={el.shadowEnabled ? (el.shadowOffsetX || 0) : 0}
-                    shadowOffsetY={el.shadowEnabled ? (el.shadowOffsetY || 0) : 0}
-                    shadowOpacity={el.shadowEnabled ? (el.shadowOpacity || 0.5) : 0}
                     textDecoration={el.textDecoration}
+                    // verticalAlign no es soportado directamente, se podría manejar con offsetY
                   />
+                );
+              case "line":
+                return (
+                  <Line
+                    {...commonProps}
+                    {...styleProps}
+                    points={el.points}
+                    // Para que la línea se centre en (x,y), necesitamos offset
+                    // Si los puntos están definidos relativos al centro, podemos usar offset
+                    // Por defecto, Konva dibuja la línea con el primer punto en (x,y)
+                    // Para centrar, calculamos el bounding box de los puntos y ajustamos
+                    // Simplificamos: asumimos que los puntos ya están en coordenadas absolutas? No, mejor los dejamos relativos.
+                    // Usaremos offset para centrar: calculamos el centro de los puntos y ponemos offset negativo.
+                    // Pero para simplificar, aquí asumimos que los puntos están en coordenadas del elemento y usamos offsetX/Y.
+                    // Vamos a calcular el centro de los puntos y usar offset para que (x,y) sea el centro.
+                    // Esto requiere un cálculo previo, pero podemos hacerlo en el render.
+                    // Lo dejamos simple por ahora: sin offset, el primer punto estará en (x,y).
+                    // Para un mejor UX, se podría calcular el centro y usar offset.
+                  />
+                );
+              case "path":
+                return (
+                  <Path
+                    {...commonProps}
+                    {...styleProps}
+                    data={el.data}
+                    // Similar a line, el path se dibuja con el origen en (x,y). Para centrar, necesitaríamos escalar y trasladar.
+                    // Lo dejamos así por ahora.
+                  />
+                );
+              case "group":
+                // Para grupos, necesitamos renderizar un Group de Konva y dentro sus hijos.
+                // Esto requiere recursividad. Lo dejamos como placeholder.
+                console.warn("Group rendering not fully implemented");
+                return (
+                  <Group {...commonProps} {...styleProps}>
+                    {el.children?.map(child => {
+                      // Aquí habría que llamar a una función recursiva o al mismo switch
+                      // Por simplicidad, no lo implementamos ahora.
+                      return null;
+                    })}
+                  </Group>
                 );
               default:
                 return null;
@@ -703,45 +756,30 @@ const EditorCanvas = forwardRef<EditorCanvasRef, Props>(({
                 return newBox;
               }}
               onTransformEnd={() => {
-                if (selectedIds.length > 1 && trRef.current) {
-                  const nodes = trRef.current.nodes();
-                  const updates: Record<string, Partial<EditorElement>> = {};
-                  
-                  nodes.forEach((node) => {
-                    const id = node.id();
-                    const element = elements.find(el => el.id === id);
-                    
-                    if (element) {
-                      updates[id] = {
-                        x: node.x(),
-                        y: node.y(),
-                        rotation: node.rotation(),
-                        scaleX: node.scaleX(),
-                        scaleY: node.scaleY(),
-                      };
-                      
-                      if (element.type === 'rect' || element.type === 'text') {
-                        updates[id].size = node.width();
-                      } else if (element.type === 'circle') {
-                        const circle = node as any;
-                        updates[id].size = circle.radius() * 2;
-                      } else if (element.type === 'star') {
-                        const star = node as any;
-                        updates[id].size = star.outerRadius() * 2;
-                      } else if (element.type === 'polygon' || element.type === 'triangle') {
-                        const polygon = node as any;
-                        updates[id].size = polygon.radius() * 2;
-                      }
-                    }
-                  });
+                if (!trRef.current) return;
 
-                  setElements((prev) =>
-                    prev.map((el) => {
-                      const update = updates[el.id];
-                      return update ? { ...el, ...update } : el;
-                    })
-                  );
-                }
+                const nodes = trRef.current.nodes();
+                const updates: Record<string, Partial<EditorElement>> = {};
+
+                nodes.forEach((node) => {
+                  const id = node.id();
+                  // Solo actualizamos transformaciones: posición, rotación y escala
+                  // Las dimensiones base (size, fontSize, etc.) se mantienen intactas
+                  updates[id] = {
+                    x: node.x(),
+                    y: node.y(),
+                    rotation: node.rotation(),
+                    scaleX: node.scaleX(),
+                    scaleY: node.scaleY(),
+                  };
+                });
+
+                setElements((prev) =>
+                  prev.map((el) => {
+                    const update = updates[el.id];
+                    return update ? ({ ...el, ...update } as EditorElement) : el;
+                  })
+                );
               }}
             />
           )}

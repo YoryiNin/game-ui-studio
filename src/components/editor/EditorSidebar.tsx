@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { EditorElement, ShapeType } from "../../types/editor";
+import type { EditorElement, ShapeType } from "../../types/EditorElement";
 import { 
   FiCircle, 
   FiSquare, 

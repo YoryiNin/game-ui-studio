@@ -4,8 +4,9 @@ import { removeBackground } from "@imgly/background-removal";
 import ImageUploader from "../components/ImageTools/ImageUploader";
 import ImageResult from "../components/ImageTools/ImageResult";
 import BackgroundTools from "../components/ImageTools/BackgroundTools";
+import Navbar from "../components/Navbar";
 
-const RemoveBg = () => {
+export default function RemoveBg() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [originalPreview, setOriginalPreview] = useState<string | null>(null);
   const [processedImage, setProcessedImage] = useState<string | null>(null);
@@ -13,11 +14,8 @@ const RemoveBg = () => {
   const [error, setError] = useState<string | null>(null);
   const [showTools, setShowTools] = useState(false);
 
-  // Seleccionar imagen
   const handleImageSelect = (file: File) => {
-    if (originalPreview) {
-      URL.revokeObjectURL(originalPreview);
-    }
+    if (originalPreview) URL.revokeObjectURL(originalPreview);
 
     const previewUrl = URL.createObjectURL(file);
 
@@ -28,7 +26,6 @@ const RemoveBg = () => {
     setShowTools(false);
   };
 
-  // Redimensionar imagen
   const resizeImage = (file: File, maxSize: number): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -78,7 +75,6 @@ const RemoveBg = () => {
     });
   };
 
-  // Procesar imagen principal
   const handleProcessImage = async () => {
     if (!selectedImage) return;
 
@@ -87,42 +83,27 @@ const RemoveBg = () => {
 
     try {
       const resizedBlob = await resizeImage(selectedImage, 1024);
-
-      const resultBlob = await removeBackground(resizedBlob, {
-        progress: (key, current, total) => {
-          console.log(`Modelo: ${key} ${current}/${total}`);
-        },
-      });
+      const resultBlob = await removeBackground(resizedBlob);
 
       const resultUrl = URL.createObjectURL(resultBlob);
       setProcessedImage(resultUrl);
-      setShowTools(true); // Mostrar herramientas después de procesar
 
+      // 👇 NO abrir editor automáticamente
+      setShowTools(false);
     } catch (err) {
-      console.error("ERROR REAL:", err);
+      console.error(err);
       setError("Error procesando la imagen. Intenta con una imagen más pequeña.");
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Actualizar desde el editor
   const handleEditorUpdate = (blob: Blob) => {
-    if (processedImage) {
-      URL.revokeObjectURL(processedImage);
-    }
-    
+    if (processedImage) URL.revokeObjectURL(processedImage);
     const url = URL.createObjectURL(blob);
     setProcessedImage(url);
-    // Las herramientas siguen mostrándose
   };
 
-  // Volver a la vista de resultados
-  const handleBackToResult = () => {
-    setShowTools(false);
-  };
-
-  // Limpiar todo
   const handleClear = () => {
     if (processedImage) URL.revokeObjectURL(processedImage);
     if (originalPreview) URL.revokeObjectURL(originalPreview);
@@ -135,51 +116,83 @@ const RemoveBg = () => {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6 space-y-6">
-      {/* Uploader siempre arriba */}
-      <ImageUploader
-        onImageSelect={handleImageSelect}
-        onClear={handleClear}
-        selectedImage={selectedImage}
-        error={error}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0f] via-[#0f0f1a] to-[#1a1a2e] text-white">
+      <Navbar activeTab="/remove-bg" />
 
-      {selectedImage && originalPreview && (
-        <div className="space-y-6">
-          {/* Mostrar ImageResult solo cuando NO estamos en modo herramientas */}
-          {!showTools && (
-            <ImageResult
-              originalImage={originalPreview}
-              processedImage={processedImage}
-              isProcessing={isProcessing}
-              onProcess={handleProcessImage}
-              onReset={handleClear}
-              error={error}
-            />
-          )}
+      <div className="max-w-6xl mx-auto px-6 py-16">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-orange-400 to-red-500 text-transparent bg-clip-text mb-4">
+            Remove Background
+          </h1>
+          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+            Elimina el fondo de tus imágenes automáticamente y edítalas al instante.
+          </p>
+        </div>
 
-          {/* Mostrar herramientas de edición cuando hay imagen procesada y showTools es true */}
-          {processedImage && showTools && (
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold text-white">Herramientas de edición</h3>
-                <button
-                  onClick={handleBackToResult}
-                  className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition"
-                >
-                  Volver al resultado
-                </button>
-              </div>
-              <BackgroundTools
-                imageUrl={processedImage}
-                onUpdate={handleEditorUpdate}
-              />
+        {/* Card principal */}
+        <div className="bg-gray-900/50 backdrop-blur-sm p-8 rounded-2xl border border-gray-800 shadow-xl">
+          
+          <ImageUploader
+            onImageSelect={handleImageSelect}
+            onClear={handleClear}
+            selectedImage={selectedImage}
+            error={error}
+          />
+
+          {selectedImage && originalPreview && (
+            <div className="space-y-8 mt-8">
+
+              {/* Resultado normal */}
+              {!showTools && (
+                <ImageResult
+                  originalImage={originalPreview}
+                  processedImage={processedImage}
+                  isProcessing={isProcessing}
+                  onProcess={handleProcessImage}
+                  onReset={handleClear}
+                  error={error}
+                />
+              )}
+
+              {/* Botón Editar */}
+              {processedImage && !showTools && (
+                <div className="flex justify-center mt-6">
+                  <button
+                    onClick={() => setShowTools(true)}
+                    className="px-8 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 hover:opacity-90 text-white rounded-2xl font-semibold transition shadow-xl"
+                  >
+                    ✏️ Editar Imagen
+                  </button>
+                </div>
+              )}
+
+              {/* Editor */}
+              {processedImage && showTools && (
+                <div className="mt-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-purple-400">
+                      Editor Avanzado
+                    </h3>
+                    <button
+                      onClick={() => setShowTools(false)}
+                      className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition"
+                    >
+                      Cerrar Editor
+                    </button>
+                  </div>
+
+                  <BackgroundTools
+                    imageUrl={processedImage}
+                    onUpdate={handleEditorUpdate}
+                  />
+                </div>
+              )}
             </div>
           )}
+
         </div>
-      )}
+      </div>
     </div>
   );
-};
-
-export default RemoveBg;
+}

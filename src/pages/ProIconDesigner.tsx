@@ -6,7 +6,7 @@ import InspirationPanel from "../components/editor/InspirationPanel";
 import ExportModal from "../components/editor/ExportModal";
 import PropertiesPanel from "../components/editor/PropertiesPanel";
 import LayersPanel from "../components/editor/LayersPanel";
-import type { EditorElement, ShapeType } from "../types/editor";
+import type { EditorElement, ShapeType } from "../types/EditorElement";
 import Navbar from "../components/Navbar";
 import { 
   FiGrid, 
@@ -94,7 +94,7 @@ export default function ProIconDesigner() {
           x: el.x + 30,
           y: el.y + 30,
           name: `${el.name}_copy`
-        }));
+        } as EditorElement));
         
         const newElements = [...elements, ...duplicated];
         setElements(newElements);
@@ -140,10 +140,9 @@ export default function ProIconDesigner() {
 
   const addShape = (type: ShapeType) => {
     const base = {
-      type,
+      id: uuidv4(),
       x: 400,
       y: 300,
-      size: 150,
       rotation: 0,
       fill: type === "text" ? "#ffffff" : "#06b6d4",
       opacity: 1,
@@ -153,44 +152,70 @@ export default function ProIconDesigner() {
       name: `${type}_${elements.length + 1}`,
     };
 
-    let newElement: EditorElement = { 
-      id: uuidv4(), 
-      ...base,
-    };
+    let newElement: EditorElement;
 
-    // Shape-specific defaults
-    switch(type) {
-      case "star":
-        newElement.numPoints = 5;
-        newElement.innerRadius = 60;
-        break;
-      case "polygon":
-        newElement.numPoints = 6;
+    switch (type) {
+      case "circle":
+        newElement = { ...base, type: "circle", size: 150 } as EditorElement;
         break;
       case "rect":
-        newElement.cornerRadius = 0;
+        newElement = { ...base, type: "rect", size: 150, cornerRadius: 0 } as EditorElement;
+        break;
+      case "triangle":
+        newElement = { ...base, type: "triangle", size: 150 } as EditorElement;
+        break;
+      case "star":
+        newElement = { ...base, type: "star", size: 150, numPoints: 5, innerRadius: 60 } as EditorElement;
+        break;
+      case "polygon":
+        newElement = { ...base, type: "polygon", size: 150, numPoints: 6 } as EditorElement;
         break;
       case "text":
-        newElement.text = "LOGO";
-        newElement.fontSize = 70;
-        newElement.fontFamily = "Montserrat";
-        newElement.fontWeight = 700;
-        newElement.fontStyle = "normal";
-        newElement.textDecoration = "none";
-        newElement.uppercase = false;
-        newElement.letterSpacing = 2;
-        newElement.lineHeight = 1;
-        newElement.align = "center";
-        newElement.stroke = "#000000";
-        newElement.strokeWidth = 0;
-        newElement.strokeEnabled = false;
-        newElement.shadowColor = "#000000";
-        newElement.shadowBlur = 0;
-        newElement.shadowOffsetX = 0;
-        newElement.shadowOffsetY = 0;
-        newElement.shadowOpacity = 0.5;
-        newElement.shadowEnabled = false;
+        newElement = {
+          ...base,
+          type: "text",
+          text: "LOGO",
+          fontSize: 70,
+          fontFamily: "Montserrat",
+          fontWeight: 700,
+          fontStyle: "normal",
+          textDecoration: "none",
+          uppercase: false,
+          letterSpacing: 2,
+          lineHeight: 1,
+          align: "center",
+          strokeEnabled: false,
+          shadowEnabled: false,
+          size: 150,
+        } as EditorElement;
         break;
+      case "line":
+        newElement = {
+          ...base,
+          type: "line",
+          points: [0, -50, 0, 50],
+          strokeEnabled: true,
+          fill: "transparent",
+        } as EditorElement;
+        break;
+      case "path":
+        newElement = {
+          ...base,
+          type: "path",
+          data: "M10 10 L20 20 L30 10 Z",
+          strokeEnabled: true,
+          fill: "transparent",
+        } as EditorElement;
+        break;
+      case "group":
+        newElement = {
+          ...base,
+          type: "group",
+          children: [],
+        } as EditorElement;
+        break;
+      default:
+        return;
     }
 
     const newElements = [...elements, newElement];
@@ -203,7 +228,7 @@ export default function ProIconDesigner() {
   const updateElement = (id: string, updates: Partial<EditorElement>) => {
     setElements(prev => {
       const newElements = prev.map((el) => 
-        el.id === id ? { ...el, ...updates } : el
+        el.id === id ? { ...el, ...updates } as EditorElement : el
       );
       saveToHistory(newElements);
       return newElements;
@@ -213,7 +238,7 @@ export default function ProIconDesigner() {
   const updateMultipleElements = (ids: string[], updates: Partial<EditorElement>) => {
     setElements(prev => {
       const newElements = prev.map((el) => 
-        ids.includes(el.id) ? { ...el, ...updates } : el
+        ids.includes(el.id) ? { ...el, ...updates } as EditorElement : el
       );
       saveToHistory(newElements);
       return newElements;
@@ -249,7 +274,7 @@ export default function ProIconDesigner() {
         x: element.x + 20,
         y: element.y + 20,
         name: `${element.name}_copy`
-      };
+      } as EditorElement;
       const newElements = [...elements, newElement];
       setElements(newElements);
       saveToHistory(newElements);
@@ -266,7 +291,7 @@ export default function ProIconDesigner() {
       x: el.x + 30,
       y: el.y + 30,
       name: `${el.name}_copy`
-    }));
+    } as EditorElement));
     
     const updatedElements = [...elements, ...newElements];
     setElements(updatedElements);
@@ -356,7 +381,7 @@ export default function ProIconDesigner() {
     const newElements = preset.map(el => ({
       ...el,
       id: uuidv4(),
-    }));
+    } as EditorElement));
     setElements(newElements);
     saveToHistory(newElements);
     setSelectedIds([]);

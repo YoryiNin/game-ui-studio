@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import type { EditorElement } from "../../types/editor";
+import type { EditorElement } from "../../types/EditorElement";
 import { FiDownload, FiX, FiImage, FiGrid, FiZoomIn, FiZoomOut } from "react-icons/fi";
 import { PLATFORM_GUIDES, PLATFORM_SIZES, type PlatformKey } from "../../types/platforms";
 

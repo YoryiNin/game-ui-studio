@@ -35,7 +35,7 @@ export default function HomePage() {
     path: "/remove-bg", 
     color: "from-orange-500 to-red-600", 
     icon: <FiImage className="w-12 h-12" />,
-    description: "Elimina el fondo de imágenes automáticamente con IA",
+    description: "Elimina el fondo de imágenes automáticamente ",
     features: ["Detección automática", "Fondo transparente", "Export PNG"]
   },
   ];

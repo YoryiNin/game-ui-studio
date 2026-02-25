@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { EditorElement, GradientStop } from "../../types/editor";
+import type { EditorElement, GradientStop } from "../../types/EditorElement";
 import { 
   FiType, 
   FiCircle, 

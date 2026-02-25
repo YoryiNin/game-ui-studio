@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { EditorElement } from "../../types/editor";
+import type { EditorElement } from "../../types/EditorElement";
 import { FiSearch, FiGrid, FiHeart, FiDownload } from "react-icons/fi";
 
 interface Props {

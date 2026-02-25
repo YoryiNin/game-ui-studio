@@ -1,4 +1,4 @@
-import type { EditorElement } from "../../types/editor";
+import type { EditorElement } from "../../types/EditorElement";
 import { 
   FiEye, 
   FiEyeOff, 
